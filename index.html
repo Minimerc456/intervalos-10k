@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b0f14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Intervalos 10K">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>Intervalos 10K</title>
+<style>
+:root{
+  --bg:#0b0f14; --card:#141a22; --card2:#1d2530; --line:#263040;
+  --text:#f2f5f8; --muted:#8d9aab; --accent:#22c55e; --accent-ink:#03140a;
+  --green:#15803d; --red:#c81e1e; --blue:#1d4ed8; --neutral:#1a222d; --amber:#b45309;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{overscroll-behavior:none}
+button{font:inherit;color:inherit;border:0;background:var(--card2);border-radius:16px;min-height:56px;padding:0 18px;font-weight:700;font-size:18px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+button:active{transform:scale(.97);filter:brightness(1.15)}
+button:disabled{opacity:.4}
+.primary{background:var(--accent);color:var(--accent-ink)}
+.danger{background:#3a1518;color:#ffb4b4}
+.ghost{background:transparent;border:2px solid var(--line)}
+.screen{min-height:100%;max-width:640px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 20px);display:flex;flex-direction:column;gap:14px}
+.bar{display:flex;align-items:center;gap:10px}
+.bar h1{font-size:26px;font-weight:900;flex:1;letter-spacing:-.01em}
+.bar h1 small{display:block;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:0}
+.icon-btn{min-width:56px;padding:0 14px;font-size:16px}
+h2{font-size:14px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:800;margin-top:6px}
+.muted{color:var(--muted)}
+.weeks{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.week{font-size:22px;position:relative}
+.week.sel{background:var(--accent);color:var(--accent-ink)}
+.week .dot{position:absolute;top:7px;right:9px;font-size:12px}
+.card{background:var(--card);border-radius:18px;padding:16px 16px;display:flex;flex-direction:column;gap:6px;text-align:left;font-weight:500;min-height:auto;border:2px solid transparent;width:100%}
+.card .t{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:20px}
+.card .d{font-size:16px;color:#c9d2dd}
+.card .m{font-size:13px;color:var(--muted)}
+.tag{font-size:12px;font-weight:800;padding:3px 9px;border-radius:99px;background:var(--card2);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.tag.q{background:#3b2a07;color:#fbbf24}.tag.s{background:#0f2e1b;color:#4ade80}.tag.x{background:#3a1518;color:#fca5a5}
+.done{color:var(--accent);font-size:14px;font-weight:800}
+.note{background:var(--card);border-radius:14px;padding:12px 14px;font-size:14px;color:#c9d2dd;line-height:1.4}
+.note.warn{background:#2f2208;color:#fcd34d}
+.note.err{background:#3a1518;color:#fecaca}
+.blocks{display:flex;flex-direction:column;gap:6px}
+.blk{display:grid;grid-template-columns:1fr auto;gap:2px 10px;background:var(--card);border-radius:12px;padding:10px 14px;border-left:5px solid var(--line)}
+.blk b{font-size:16px}.blk span{font-size:15px;font-variant-numeric:tabular-nums;font-weight:700}
+.blk small{grid-column:1/-1;color:var(--muted);font-size:13px}
+.blk.work{border-left-color:#f59e0b}.blk.rest{border-left-color:#475569}.blk.warmup,.blk.cooldown,.blk.easy{border-left-color:var(--accent)}.blk.strides{border-left-color:#eab308}.blk.test{border-left-color:#ef4444}
+.seg2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg2 button.on{background:var(--accent);color:var(--accent-ink)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:700;padding:8px 12px;border-radius:99px;background:var(--card2)}
+.pill.ok{background:#0f2e1b;color:#4ade80}.pill.weak{background:#2f2208;color:#fcd34d}.pill.bad{background:#3a1518;color:#fca5a5}
+.big-start{min-height:84px;font-size:28px;font-weight:900;letter-spacing:.04em}
+.sticky-bottom{position:sticky;bottom:0;padding-top:8px;padding-bottom:calc(env(safe-area-inset-bottom) + 4px);background:linear-gradient(transparent,var(--bg) 30%)}
+/* settings */
+.form{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border-radius:14px;padding:10px 14px;min-height:60px}
+.row label{font-weight:600;font-size:16px;flex:1}
+.row label small{display:block;color:var(--muted);font-weight:500;font-size:13px}
+.row input[type=text],.row input[type=number],.row select{font:inherit;font-size:20px;font-weight:700;width:92px;text-align:center;background:var(--card2);border:2px solid var(--line);color:var(--text);border-radius:10px;padding:8px 4px;font-variant-numeric:tabular-nums}
+.row select{width:auto;font-size:16px;padding:10px 8px}
+.row input.bad{border-color:#ef4444}
+.zone-row .pair{display:flex;align-items:center;gap:6px;color:var(--muted);font-weight:700}
+.switch{appearance:none;-webkit-appearance:none;width:58px;height:34px;border-radius:99px;background:var(--line);position:relative;cursor:pointer;flex:none;transition:.2s}
+.switch::after{content:"";position:absolute;top:4px;left:4px;width:26px;height:26px;border-radius:50%;background:#fff;transition:.2s}
+.switch:checked{background:var(--accent)}.switch:checked::after{left:28px}
+/* summary */
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:right;padding:6px 4px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+td{padding:8px 4px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
+td small{display:block;color:var(--muted);font-size:12px;font-weight:500}
+tr.k-work td{background:#1c1708}
+tr.k-work td:first-child b{color:#fbbf24}
+tr.splits td{font-size:12px;color:var(--muted);text-align:left;padding-top:0}
+.totals{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.totals div{background:var(--card);border-radius:14px;padding:12px;text-align:center}
+.totals b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.totals span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.hist-item{display:flex;justify-content:space-between;align-items:center;gap:10px}
+/* run screen */
+#run{position:fixed;inset:0;display:flex;flex-direction:column;gap:6px;padding:calc(env(safe-area-inset-top) + 10px) 14px calc(env(safe-area-inset-bottom) + 12px);background:var(--neutral);transition:background-color .35s;color:#fff;overflow:hidden}
+#run.in{background:var(--green)}#run.fast{background:var(--red)}#run.slow{background:var(--blue)}#run.manual,#run.paused{background:var(--amber)}
+.r-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;font-weight:700;opacity:.9}
+.r-top .r-ind{display:flex;gap:6px}
+.r-top .r-ind span{background:rgba(0,0,0,.25);padding:4px 9px;border-radius:99px;white-space:nowrap}
+.r-prog{display:flex;gap:3px;height:10px}
+.r-prog i{display:block;background:rgba(255,255,255,.22);border-radius:3px;min-width:4px;position:relative;overflow:hidden}
+.r-prog i.d{background:rgba(255,255,255,.75)}
+.r-prog i b{position:absolute;inset:0 auto 0 0;background:#fff;width:0}
+.r-block{font-size:clamp(30px,10vw,60px);font-weight:900;text-transform:uppercase;line-height:1;letter-spacing:-.01em;margin-top:4px}
+.r-target{font-size:clamp(19px,6vw,34px);font-weight:800;opacity:.92;font-variant-numeric:tabular-nums}
+.r-center{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:0}
+.r-label{font-size:13px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;opacity:.75}
+.r-main{font-weight:900;font-variant-numeric:tabular-nums;line-height:.92;letter-spacing:-.04em;white-space:nowrap}
+.r-main small{font-size:.32em;letter-spacing:0;margin-left:.15em;opacity:.85}
+.r-pace{font-size:min(21vw,13vh);font-weight:900;font-variant-numeric:tabular-nums;line-height:.95;letter-spacing:-.03em}
+.r-pace small{font-size:.3em;opacity:.8;letter-spacing:0}
+.r-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.r-sm{font-size:min(10vw,6vh);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.r-status{font-size:clamp(24px,8vw,44px);font-weight:900;text-transform:uppercase;min-height:1.1em;margin-top:6px}
+.r-next{font-size:15px;font-weight:700;opacity:.85}
+.r-btns{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:10px}
+.r-btns button{min-height:clamp(70px,11vh,104px);font-size:21px;background:rgba(0,0,0,.3);color:#fff;border-radius:20px}
+.r-btns button[data-armed]{background:#fff;color:#000}
+#r-continue{min-height:28vh;font-size:clamp(40px,13vw,80px);font-weight:900;background:rgba(0,0,0,.32);color:#fff;border-radius:26px;letter-spacing:.03em;display:none}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%);background:#fff;color:#000;font-weight:700;padding:12px 18px;border-radius:14px;z-index:99;max-width:90vw;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+#sim{position:fixed;right:8px;top:50%;z-index:50;background:rgba(0,0,0,.65);color:#fff;border-radius:12px;padding:8px;font-size:12px;display:flex;flex-direction:column;gap:6px;align-items:center}
+#sim button{min-height:36px;padding:0 10px;font-size:14px;border-radius:8px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+/* ======================= Utilidades ======================= */
+const $ = s => document.querySelector(s);
+const app = $('#app');
+const params = new URLSearchParams(location.search);
+const SIM = params.has('sim');                      // ?sim=1  -> GPS simulado
+const SIMX = Math.max(1, +params.get('x') || 1);     // ?x=10   -> tiempo acelerado (solo en simulación)
+const T0 = Date.now();
+const clock = () => SIM ? T0 + (Date.now() - T0) * SIMX : Date.now();
+
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem('p10k.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('p10k.' + k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem('p10k.' + k); } catch {} }
+};
+const pad = n => String(n).padStart(2, '0');
+function fmtPace(sec) {
+  if (sec == null || !isFinite(sec) || sec > 1500) return '--:--';
+  sec = Math.round(sec); return Math.floor(sec / 60) + ':' + pad(sec % 60);
+}
+function fmtDur(ms, ceil) {
+  let s = Math.max(0, ceil ? Math.ceil(ms / 1000) : Math.round(ms / 1000));
+  const h = Math.floor(s / 3600); s %= 3600; const m = Math.floor(s / 60); s %= 60;
+  return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+function fmtKm(m) { return (m / 1000).toFixed(2).replace('.', ','); }
+function fmtDist(m) { if (m == null) return '—'; return m < 1000 ? Math.round(m) + ' m' : fmtKm(m) + ' km'; }
+function parsePace(str) {
+  const m = String(str).trim().match(/^(\d{1,2})\s*[:'.,]?\s*(\d{2})$/);
+  if (!m || +m[2] > 59) return null;
+  return +m[1] * 60 + +m[2];
+}
+// Ritmo para la voz: 345 -> "5 45"
+function spPace(sec) {
+  if (!isFinite(sec)) return 'parado';
+  sec = Math.round(sec); const m = Math.floor(sec / 60), s = sec % 60;
+  return s === 0 ? `${m} minutos` : s < 10 ? `${m} cero ${s}` : `${m} ${s}`;
+}
+function shortDur(mode, v) {
+  if (mode === 'dist') return v >= 1000 ? String(v / 1000).replace('.', ',') + ' km' : v + ' m';
+  if (mode === 'manual') return 'manual';
+  if (v < 60 || (v <= 120 && v % 60)) return v + ' s';
+  return (v % 60 ? `${Math.floor(v / 60)}:${pad(v % 60)}` : v / 60) + ' min';
+}
+function spDur(def) {
+  const dist = def.estFrom || (def.mode === 'dist' ? def.value : 0);
+  if (dist) return dist < 1000 ? `${dist} metros` : dist === 1000 ? '1 kilómetro' : `${String(dist / 1000).replace('.', ',')} kilómetros`;
+  const v = def.value;
+  if (v < 60 || (v <= 120 && v % 60)) return `${v} segundos`;
+  const m = Math.floor(v / 60), s = v % 60;
+  return (m === 1 ? '1 minuto' : `${m} minutos`) + (s ? ` ${s} segundos` : '');
+}
+function haversine(a, b) {
+  const R = 6371000, toR = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * toR, dLon = (b.lon - a.lon) * toR;
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * toR) * Math.cos(b.lat * toR) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+function toast(msg, ms = 2600) {
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), ms);
+}
+// Botón de doble toque (para no terminar/saltar sin querer con guantes)
+function armed(btn, fn) {
+  if (btn.dataset.armed) { clearTimeout(btn._t); delete btn.dataset.armed; btn.textContent = btn.dataset.label; fn(); return; }
+  btn.dataset.label = btn.textContent; btn.dataset.armed = '1'; btn.textContent = '¿Seguro?';
+  btn._t = setTimeout(() => { delete btn.dataset.armed; btn.textContent = btn.dataset.label; }, 3000);
+}
+
+/* ======================= Ajustes ======================= */
+const ZONE_NAMES = { suave: 'Suave', umbral: 'Umbral', series: 'Series', r10k: 'Ritmo 10K' };
+const DEFAULTS = {
+  zones: { suave: { min: 415, max: 450 }, umbral: { min: 345, max: 355 }, series: { min: 315, max: 325 }, r10k: { min: 345, max: 355 } },
+  easyFastLimit: 410,   // 6:50 — en rodajes suaves solo se avisa si vas más rápido
+  strides: 4,
+  alertDelay: 15,       // s seguidos fuera de ritmo antes de avisar
+  alertRepeat: 30,      // s entre avisos repetidos
+  maxAccuracy: 25,      // m — se descartan puntos peores
+  colorBasis: 'inst',   // 'inst' | 'block'
+  voice: true, beeps: true, vibrate: true, kmSplits: true
+};
+function loadSettings() {
+  const s = LS.get('settings', {});
+  const d = JSON.parse(JSON.stringify(DEFAULTS));
+  return { ...d, ...s, zones: { ...d.zones, ...(s.zones || {}) } };
+}
+let S = loadSettings();
+const saveSettings = () => LS.set('settings', S);
+const midPace = z => (S.zones[z].min + S.zones[z].max) / 2;
+
+/* ======================= Plan ======================= */
+const DAYS = { tue: 'Martes', fri: 'Viernes', sun: 'Domingo' };
+const PLAN = [
+  { tue: { n: 5, mode: 'time', v: 180,  zone: 'umbral', rec: 90,  vc: 7 }, fri: 5, sun: { easy: 7 } },
+  { tue: { n: 4, mode: 'time', v: 300,  zone: 'umbral', rec: 60,  vc: 7 }, fri: 5, sun: { easy: 8 } },
+  { tue: { n: 6, mode: 'dist', v: 800,  zone: 'series', rec: 120, vc: 7 }, fri: 6, sun: { easy: 9 } },
+  { tue: { n: 3, mode: 'time', v: 300,  zone: 'umbral', rec: 60,  vc: 5 }, fri: 4, sun: { test: 5, ca: 15 } },
+  { tue: { n: 3, mode: 'time', v: 600,  zone: 'umbral', rec: 120, vc: 7 }, fri: 6, sun: { easy: 10 } },
+  { tue: { n: 5, mode: 'dist', v: 1000, zone: 'series', rec: 120, vc: 7 }, fri: 6, sun: { easy: 11 } },
+  { tue: { n: 2, mode: 'time', v: 900,  zone: 'umbral', rec: 180, vc: 5 }, fri: 6, sun: { easy: 12 } },
+  { tue: { n: 3, mode: 'dist', v: 1000, zone: 'r10k',   rec: 120, vc: 5 }, fri: 4, sun: { test: 10, ca: 10 } },
+];
+const CA = min => [
+  { kind: 'warmup', name: 'Calentamiento', mode: 'time', value: min * 60, zone: 'suave', easy: true },
+  { kind: 'strides', name: 'Rectas', mode: 'manual' }
+];
+const VC = min => ({ kind: 'cooldown', name: 'Vuelta a la calma', mode: 'time', value: min * 60, zone: 'suave', easy: true });
+const EASY = km => ({ kind: 'easy', name: `Rodaje ${km} km`, mode: 'dist', value: km * 1000, zone: 'suave', easy: true, splits: true });
+function REPS(t) {
+  const out = [];
+  for (let i = 1; i <= t.n; i++) {
+    out.push({ kind: 'work', name: `Serie ${i}/${t.n}`, idx: i, total: t.n, mode: t.mode, value: t.v, zone: t.zone });
+    if (i < t.n) out.push({ kind: 'rest', name: 'Recuperación', mode: 'time', value: t.rec });
+  }
+  return out;
+}
+function getSession(w, day) {
+  const p = PLAN[w - 1]; let blocks, desc, type = 'suave';
+  if (day === 'tue') {
+    const t = p.tue; type = 'calidad';
+    blocks = [...CA(10), ...REPS(t), VC(t.vc)];
+    const zw = t.zone === 'r10k' ? 'a ritmo 10K' : t.zone;
+    desc = `CA + ${t.n} × ${shortDur(t.mode, t.v)} ${zw}, rec. ${shortDur('time', t.rec)} + VC ${t.vc} min`;
+  } else if (day === 'fri') {
+    blocks = [EASY(p.fri)]; desc = `${p.fri} km suave`;
+  } else if (p.sun.test) {
+    const s = p.sun; type = 'test';
+    blocks = [...CA(s.ca), { kind: 'test', name: `Test ${s.test}K`, mode: 'dist', value: s.test * 1000, zone: null, splits: true }, VC(5)];
+    desc = `Test ${s.test}K (CA ${s.ca} min + rectas, VC 5 min)`;
+  } else {
+    blocks = [EASY(p.sun.easy)]; desc = `${p.sun.easy} km suave`;
+  }
+  return { id: `w${w}-${day}`, week: w, day, title: `Semana ${w} · ${DAYS[day]}`, desc, type, blocks };
+}
+function estSec(b) {
+  if (b.mode === 'time') return b.value;
+  if (b.mode === 'manual') return 120;
+  return b.value / 1000 * (b.zone ? midPace(b.zone) : midPace('r10k'));
+}
+function zoneRange(def) {
+  if (!def.zone) return null;
+  if (def.easy) return { min: S.easyFastLimit, max: Infinity };
+  return S.zones[def.zone];
+}
+function evalPace(def, pace) {
+  const z = zoneRange(def);
+  if (!z || pace == null) return null;
+  if (pace < z.min) return 'fast';
+  if (pace > z.max) return 'slow';
+  return 'in';
+}
+function targetText(def) {
+  if (def.zone) {
+    const z = S.zones[def.zone];
+    const base = `${ZONE_NAMES[def.zone]} ${fmtPace(z.min)}–${fmtPace(z.max)}`;
+    return def.easy ? `${base} · tope ${fmtPace(S.easyFastLimit)}` : base;
+  }
+  if (def.kind === 'rest') return 'Trote suave o andar';
+  if (def.kind === 'strides') return `${S.strides} rectas progresivas`;
+  if (def.kind === 'test') return 'A tope · ritmo libre';
+  return '';
+}
+function targetShort(def) {
+  if (!def.zone) return '—';
+  if (def.easy) return `≥${fmtPace(S.easyFastLimit)}`;
+  const z = S.zones[def.zone]; return `${fmtPace(z.min)}–${fmtPace(z.max)}`;
+}
+
+/* ======================= Historial ======================= */
+const getHist = () => LS.get('history', []);
+const setHist = h => LS.set('history', h);
+function doneDate(id) {
+  const e = getHist().find(h => h.sessionId === id && !h.partial);
+  return e ? new Date(e.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : null;
+}
+
+/* ======================= Voz, sonido, vibración, wake lock ======================= */
+let esVoice = null;
+function pickVoice() {
+  if (!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices();
+  esVoice = vs.find(v => v.lang === 'es-ES') || vs.find(v => /^es[-_]ES/i.test(v.lang)) || vs.find(v => /^es/i.test(v.lang)) || null;
+}
+if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function say(text, interrupt) {
+  if (!S.voice || !('speechSynthesis' in window)) return;
+  if (interrupt) speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'es-ES'; if (esVoice) u.voice = esVoice; u.rate = 1.05;
+  speechSynthesis.speak(u);
+}
+let actx = null;
+function unlockAudio() {
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch {}
+  if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); }
+}
+function beep(freq = 880, dur = 0.15) {
+  if (!S.beeps || !actx) return;
+  try {
+    const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.6, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur + 0.03);
+  } catch {}
+}
+const vibrate = p => { if (S.vibrate && navigator.vibrate) try { navigator.vibrate(p); } catch {} };
+
+let wakeLock = null;
+async function lockScreen() {
+  try {
+    if ('wakeLock' in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; updateIndicators(); });
+    }
+  } catch {}
+  updateIndicators();
+}
+function releaseScreen() { try { wakeLock && wakeLock.release(); } catch {} wakeLock = null; }
+document.addEventListener('visibilitychange', () => {
+  if (!run) return;
+  if (document.visibilityState === 'visible') lockScreen();
+  else savePartial();
+});
+
+/* ======================= GPS ======================= */
+const gps = { watchId: null, acc: null, lastFix: 0, error: null, anchor: null, rejects: 0 };
+function startGPS() {
+  if (gps.watchId != null) return;
+  if (SIM) { startSimGPS(); return; }
+  if (!('geolocation' in navigator)) { gps.error = 'Este navegador no tiene geolocalización'; updateIndicators(); return; }
+  if (!window.isSecureContext) { gps.error = 'El GPS necesita HTTPS'; updateIndicators(); return; }
+  gps.watchId = navigator.geolocation.watchPosition(
+    pos => handleFix(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, clock()),
+    err => { gps.error = err.code === 1 ? 'Permiso de ubicación denegado' : err.code === 3 ? 'Sin señal GPS' : 'Error de GPS'; updateIndicators(); },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 });
+}
+function stopGPS() {
+  if (gps.watchId == null) return;
+  if (gps.watchId === 'sim') clearInterval(sim.timer); else navigator.geolocation.clearWatch(gps.watchId);
+  gps.watchId = null; gps.anchor = null; gps.acc = null; gps.lastFix = 0;
+}
+function handleFix(lat, lon, acc, t) {
+  gps.error = null; gps.acc = acc; gps.lastFix = t;
+  if (!run || run.paused || run.mode !== 'gps') { gps.anchor = null; updateIndicators(); return; }
+  if (acc > S.maxAccuracy) { updateIndicators(); return; }         // punto poco preciso
+  const p = { lat, lon, acc, t };
+  if (!gps.anchor) { gps.anchor = p; return; }
+  const d = haversine(gps.anchor, p), dt = (t - gps.anchor.t) / 1000;
+  if (dt <= 0) return;
+  if (d / dt > 9 && d > 15) {                                    // salto imposible (> 9 m/s)
+    if (++gps.rejects >= 5) { gps.anchor = p; gps.rejects = 0; }  // el ancla era el punto malo
+    return;
+  }
+  gps.rejects = 0;
+  if (d < Math.min(10, Math.max(3, acc * 0.4))) return;          // ruido estando casi parado
+  gps.anchor = p;
+  addDistance(d);
+}
+function addDistance(d) {
+  const B = run.b;
+  run.totalDist += d; B.dist += d;
+  B.samples.push({ t: blockElapsed(), d: B.dist });
+  if (B.samples.length > 240) B.samples.splice(0, B.samples.length - 240);
+}
+function gpsState() {
+  if (run && run.mode === 'cinta') return { cls: '', txt: 'Cinta' };
+  if (gps.error) return { cls: 'bad', txt: gps.error };
+  if (!gps.lastFix) return { cls: 'weak', txt: 'Buscando GPS…' };
+  if (clock() - gps.lastFix > 12000) return { cls: 'bad', txt: 'GPS sin señal' };
+  const a = Math.round(gps.acc);
+  return a <= S.maxAccuracy ? { cls: 'ok', txt: `GPS ✓ ${a} m` } : { cls: 'weak', txt: `GPS débil ${a} m` };
+}
+
+/* --- Simulador (?sim=1&x=10) para probar en casa --- */
+const sim = { offset: 0, lat: 40.4168, lon: -3.7038, timer: null, lastT: 0 };
+function startSimGPS() {
+  gps.watchId = 'sim'; sim.lastT = clock();
+  sim.timer = setInterval(() => {
+    const t = clock(), dt = (t - sim.lastT) / 1000; sim.lastT = t;
+    let pace = 1e9;
+    if (run && !run.paused && run.b) {
+      const d = run.b.def;
+      pace = d.kind === 'rest' ? 480 : d.zone ? (d.easy ? 425 : midPace(d.zone)) : 330;
+      pace += Math.sin(t / 50000) * 22 + sim.offset;
+    }
+    sim.lat += (1000 / pace) * dt / 111320;
+    const n = () => (Math.random() - .5) * 0.00002;
+    handleFix(sim.lat + n(), sim.lon + n(), 4 + Math.random() * 5, t);
+  }, Math.max(100, 1000 / SIMX));
+}
+function simPanel() {
+  if (!SIM || $('#sim')) return;
+  const el = document.createElement('div'); el.id = 'sim';
+  el.innerHTML = `<b>SIM ×${SIMX}</b><button data-d="-15">Más rápido</button><span id="sim-o">±0 s/km</span><button data-d="15">Más lento</button>`;
+  el.onclick = e => { const d = e.target.dataset.d; if (!d) return; sim.offset += +d; $('#sim-o').textContent = (sim.offset > 0 ? '+' : sim.offset < 0 ? '' : '±') + sim.offset + ' s/km'; };
+  document.body.appendChild(el);
+}
+
+/* ======================= Motor de la sesión ======================= */
+let run = null, tickTimer = null;
+
+function blockElapsed() {
+  const B = run.b, now = clock();
+  return now - B.start - B.pausedMs - (run.paused ? now - run.pauseStart : 0);
+}
+function blockPace() {
+  const B = run.b, el = blockElapsed();
+  return el > 5000 && B.dist > 15 ? (el / 1000) / (B.dist / 1000) : null;
+}
+// Ritmo "instantáneo": distancia de los últimos ~20 s
+function instPace() {
+  const B = run.b, now = blockElapsed(), W = 20000, s = B.samples;
+  if (clock() - gps.lastFix > 12000) return null;
+  let ref = s[0];
+  for (let i = s.length - 1; i >= 0; i--) if (s[i].t <= now - W) { ref = s[i]; break; }
+  const dt = (now - ref.t) / 1000;
+  if (dt < 6) return null;
+  const v = (B.dist - ref.d) / dt;
+  return v > 0.5 ? 1000 / v : Infinity;
+}
+
+function startRun(session, mode) {
+  let blocks = session.blocks.map(b => ({ ...b }));
+  if (mode === 'cinta') {
+    blocks = blocks.map(b => {
+      if (b.mode !== 'dist') return b;
+      if (b.zone) return { ...b, mode: 'time', value: Math.round(b.value / 1000 * (b.easy ? midPace('suave') : midPace(b.zone))), estFrom: b.value };
+      return { ...b, mode: 'manual', value: 0, estFrom: b.value, manualLabel: 'BLOQUE HECHO' };
+    });
+  }
+  run = { session, mode, blocks, i: 0, startedAt: clock(), paused: false, pauseStart: 0, totalDist: 0, results: [], lastTick: 0, lastSave: 0, b: null };
+  gps.anchor = null;
+  if (mode === 'gps') startGPS(); else stopGPS();
+  renderRunScreen();
+  startBlock(clock(), false);
+  savePartial();
+  clearInterval(tickTimer);
+  tickTimer = setInterval(tick, SIM ? 100 : 250);
+  tick();
+}
+
+function startBlock(t0, quiet) {
+  const def = run.blocks[run.i];
+  run.b = { def, start: t0, pausedMs: 0, dist: 0, samples: [{ t: 0, d: 0 }], kmNext: 1000, kmLastT: 0, splits: [],
+            inMs: 0, measMs: 0, outSince: 0, lastAlert: 0, lastCount: 4, flags: {} };
+  if (run.paused) run.pauseStart = clock();
+  layoutBlock();
+  beep(1320, 0.45); vibrate([300, 120, 300]);
+  if (!quiet) announce(def);
+}
+
+function announce(def) {
+  const z = def.zone && S.zones[def.zone];
+  switch (def.kind) {
+    case 'warmup': say(`Calentamiento, ${spDur(def)} suave`); break;
+    case 'strides': say(`Calentamiento terminado. Haz ${S.strides} rectas y pulsa continuar`); vibrate([600, 200, 600]); break;
+    case 'work': say(`Serie ${def.idx} de ${def.total}. ${spDur(def)}. Ritmo ${spPace(z.min)} a ${spPace(z.max)}`); break;
+    case 'rest': say(`Recuperación, ${spDur(def)}`); break;
+    case 'cooldown': say(`Vuelta a la calma, ${spDur(def)}`); break;
+    case 'easy': say(`Rodaje suave de ${spDur(def)}. No vayas más rápido de ${spPace(S.easyFastLimit)}`); break;
+    case 'test': say(`Test de ${spDur(def)}. ¡Dalo todo!`); break;
+  }
+}
+function spokenName(def) {
+  return def.kind === 'work' ? `serie ${def.idx} de ${def.total}` : def.kind === 'cooldown' ? 'vuelta a la calma' : def.name.toLowerCase();
+}
+
+function makeResult(B, skipped, note) {
+  const def = B.def, el = blockElapsed();
+  const timeMs = def.mode === 'time' && !skipped ? Math.min(el, def.value * 1000) : el;
+  const est = run.mode !== 'gps';
+  const dist = est ? (def.estFrom || null) : B.dist;
+  return {
+    name: def.name, kind: def.kind, target: targetShort(def), timeMs: Math.round(timeMs),
+    dist: dist == null ? null : Math.round(dist), est,
+    paceS: dist > 0 ? timeMs / dist : null,
+    inPct: B.measMs > 5000 ? Math.round(B.inMs / B.measMs * 100) : null,
+    splits: B.splits.slice(), skipped: !!skipped, note: note || (skipped ? 'saltado' : '')
+  };
+}
+function nextBlock(overMs = 0, skipped = false) {
+  run.results.push(makeResult(run.b, skipped));
+  run.i++;
+  if (run.i >= run.blocks.length) return finishRun(false);
+  startBlock(clock() - overMs, overMs > 3000);
+  savePartial();
+}
+
+function tick() {
+  if (!run) return;
+  const now = clock();
+  const dtTick = run.lastTick ? Math.min(2000, now - run.lastTick) : 0; run.lastTick = now;
+  if (now - run.lastSave > 20000) savePartial();
+  const B = run.b, def = B.def, el = blockElapsed();
+  if (run.paused) { renderTick({ el, inst: null, bp: blockPace(), status: null }); return; }
+
+  let inst = null, bp = null, status = null, basis = null;
+  if (run.mode === 'gps') {
+    inst = instPace(); bp = blockPace();
+    basis = S.colorBasis === 'block' ? (bp ?? inst) : inst;
+    if (def.mode !== 'manual') status = evalPace(def, basis);
+  }
+  if (status) { B.measMs += dtTick; if (status === 'in') B.inMs += dtTick; }
+
+  // ¿cerca del final del bloque?
+  const remT = def.mode === 'time' ? def.value * 1000 - el : Infinity;
+  const remD = def.mode === 'dist' ? def.value - B.dist : Infinity;
+  const nearEnd = remT < 10000 || remD < 50;
+
+  // Aviso de ritmo
+  if (status === 'fast' || status === 'slow') {
+    if (el > 20000 && !nearEnd) {
+      if (!B.outSince) B.outSince = now;
+      if (now - B.outSince >= S.alertDelay * 1000 && now - B.lastAlert >= S.alertRepeat * 1000) {
+        B.lastAlert = now;
+        say(status === 'fast' ? `Más lento, vas a ${spPace(basis)}` : (isFinite(basis) ? `Más rápido, vas a ${spPace(basis)}` : 'Más rápido, estás parado'));
+        vibrate([200, 100, 200, 100, 200]);
+      }
+    }
+  } else B.outSince = 0;
+
+  // Parciales por km
+  if (def.splits && run.mode === 'gps' && B.dist >= B.kmNext) {
+    const split = (el - B.kmLastT) / 1000 * (1000 / (1000 + (B.dist - B.kmNext)));
+    B.splits.push(split); B.kmLastT = el;
+    const k = B.kmNext / 1000; B.kmNext += 1000;
+    if (S.kmSplits && B.dist < def.value) say(`Kilómetro ${k}, ${spPace(split)}`);
+  }
+
+  // Avisos previos y final de bloque
+  const countdown = n => {
+    if (n >= 1 && n <= 3 && n < B.lastCount) { B.lastCount = n; beep(); say(['', 'uno', 'dos', 'tres'][n], true); vibrate(80); }
+  };
+  if (def.mode === 'time') {
+    if (def.kind === 'work' && def.value >= 240 && remT <= 60000 && !B.flags.min1) { B.flags.min1 = 1; say('Queda un minuto'); }
+    if (def.kind === 'rest' && def.value >= 30 && remT <= 11000 && !B.flags.pre) {
+      B.flags.pre = 1; const nx = run.blocks[run.i + 1]; if (nx) say(`En 10 segundos, ${spokenName(nx)}`);
+    }
+    if (remT > -1500) countdown(Math.ceil(remT / 1000));
+    if (remT <= 0) { nextBlock(-remT); return; }
+  } else if (def.mode === 'dist') {
+    if (def.value >= 400 && remD <= 100 && !B.flags.m100) { B.flags.m100 = 1; say('Últimos 100 metros'); }
+    if (inst && isFinite(inst)) countdown(Math.ceil(remD / (1000 / inst)));
+    if (remD <= 0) { nextBlock(0); return; }
+  }
+  renderTick({ el, inst, bp, status });
+}
+
+function togglePause() {
+  if (!run) return;
+  if (run.paused) { run.b.pausedMs += clock() - run.pauseStart; run.paused = false; gps.anchor = null; say('Seguimos', true); }
+  else { run.paused = true; run.pauseStart = clock(); say('Pausa', true); }
+  $('#b-pause').textContent = run.paused ? 'Reanudar' : 'Pausa';
+  tick();
+}
+
+function savePartial() {
+  if (!run) return;
+  run.lastSave = clock();
+  const cur = run.b ? [makeResult(run.b, true, 'en curso')] : [];
+  LS.set('partial', entryFrom(run.results.concat(cur), true));
+}
+function entryFrom(results, partial) {
+  const s = run.session;
+  return {
+    id: Date.now(), date: new Date(run.startedAt).toISOString(), sessionId: s.id, title: s.title, desc: s.desc, type: s.type,
+    mode: run.mode, results, partial,
+    totalMs: results.reduce((a, r) => a + r.timeMs, 0),
+    totalDist: run.mode === 'gps' ? Math.round(run.totalDist) : null,
+    zones: JSON.parse(JSON.stringify(S.zones)), easyFastLimit: S.easyFastLimit
+  };
+}
+function finishRun(early) {
+  clearInterval(tickTimer); tickTimer = null;
+  if (early) run.results.push(makeResult(run.b, true, 'cortado'));
+  const entry = entryFrom(run.results, early);
+  const h = getHist(); h.unshift(entry); setHist(h);
+  LS.del('partial');
+  say(early ? 'Sesión terminada' : 'Sesión terminada. ¡Buen trabajo!', true);
+  vibrate([500, 150, 500, 150, 500]);
+  run = null;
+  releaseScreen(); stopGPS();
+  renderSummary(entry, true);
+}
+
+/* ======================= Pantalla de carrera ======================= */
+function renderRunScreen() {
+  window.scrollTo(0, 0);
+  app.innerHTML = `
+  <div id="run">
+    <div class="r-top"><span id="r-title"></span><span class="r-ind"><span id="r-wl"></span><span id="r-gps"></span></span></div>
+    <div class="r-prog" id="r-prog"></div>
+    <div class="r-block" id="r-block"></div>
+    <div class="r-target" id="r-target"></div>
+    <div class="r-center">
+      <div class="r-label" id="r-mainlabel"></div>
+      <div class="r-main" id="r-main"></div>
+      <div id="r-metrics">
+        <div class="r-label" style="margin-top:8px">Ritmo del bloque</div>
+        <div class="r-pace" id="r-pace">--:--<small>/km</small></div>
+        <div class="r-row">
+          <div><div class="r-label">Instantáneo</div><div class="r-sm" id="r-inst">--:--</div></div>
+          <div><div class="r-label" id="r-sublabel"></div><div class="r-sm" id="r-sub"></div></div>
+        </div>
+      </div>
+      <div class="r-status" id="r-status"></div>
+    </div>
+    <button id="r-continue">CONTINUAR</button>
+    <div class="r-next" id="r-next"></div>
+    <div class="r-btns">
+      <button id="b-pause">Pausa</button><button id="b-skip">Saltar</button><button id="b-end">Terminar</button>
+    </div>
+  </div>`;
+  $('#r-title').textContent = run.session.title;
+  $('#b-pause').onclick = togglePause;
+  $('#b-skip').onclick = e => armed(e.currentTarget, () => nextBlock(0, true));
+  $('#b-end').onclick = e => armed(e.currentTarget, () => finishRun(true));
+  $('#r-continue').onclick = () => { if (run && run.b.def.mode === 'manual') nextBlock(0); };
+  simPanel();
+}
+function layoutBlock() {
+  const def = run.b.def, manual = def.mode === 'manual';
+  $('#r-block').textContent = def.name;
+  let tgt = targetText(def);
+  if (run.mode === 'cinta' && def.estFrom) tgt += ` · ${shortDur('dist', def.estFrom)}`;
+  $('#r-target').textContent = tgt;
+  $('#r-metrics').style.display = run.mode === 'gps' && !manual ? '' : 'none';
+  const c = $('#r-continue'); c.style.display = manual ? 'block' : 'none'; c.textContent = def.manualLabel || 'CONTINUAR';
+  $('#r-sublabel').textContent = def.mode === 'dist' ? 'Tiempo' : 'Distancia';
+  const nx = run.blocks[run.i + 1];
+  $('#r-next').textContent = nx ? `Después: ${nx.name} · ${shortDur(nx.mode, nx.value)}` : 'Último bloque';
+  $('#r-prog').innerHTML = run.blocks.map((b, i) => `<i class="${i < run.i ? 'd' : ''}" style="flex:${Math.max(30, estSec(b))}">${i === run.i ? '<b id="r-pbar"></b>' : ''}</i>`).join('');
+}
+function setMain(html, len) {
+  const m = $('#r-main');
+  m.innerHTML = html;
+  m.style.fontSize = `min(${(88 / (len * 0.6)).toFixed(1)}vw, ${run.mode === 'gps' && run.b.def.mode !== 'manual' ? 21 : 30}vh)`;
+}
+function renderTick({ el, inst, bp, status }) {
+  const B = run.b, def = B.def;
+  let frac = 0;
+  if (def.mode === 'time') {
+    const rem = def.value * 1000 - el, s = fmtDur(rem, true);
+    $('#r-mainlabel').textContent = 'Restante'; setMain(s, s.length);
+    $('#r-sub').textContent = fmtDist(B.dist); frac = el / (def.value * 1000);
+  } else if (def.mode === 'dist') {
+    const rem = Math.max(0, def.value - B.dist);
+    const n = rem < 1000 ? String(Math.round(rem)) : fmtKm(rem), u = rem < 1000 ? 'm' : 'km';
+    $('#r-mainlabel').textContent = 'Faltan'; setMain(`${n}<small>${u}</small>`, n.length + 0.8);
+    $('#r-sub').textContent = fmtDur(el); frac = B.dist / def.value;
+  } else {
+    const s = fmtDur(el);
+    $('#r-mainlabel').textContent = def.kind === 'strides' ? 'Tiempo en rectas' : 'Tiempo';
+    setMain(s, s.length);
+  }
+  const pb = $('#r-pbar'); if (pb) pb.style.width = Math.min(100, frac * 100) + '%';
+  $('#r-pace').innerHTML = `${fmtPace(bp)}<small>/km</small>`;
+  $('#r-inst').textContent = fmtPace(inst);
+
+  let cls = 'neutral', st = '';
+  if (run.paused) { cls = 'paused'; st = 'Pausa'; }
+  else if (def.mode === 'manual') { cls = 'manual'; st = def.kind === 'strides' ? 'Pulsa al acabar' : ''; }
+  else if (status === 'in') { cls = 'in'; st = def.easy ? 'Bien, suave' : 'En ritmo'; }
+  else if (status === 'fast') { cls = 'fast'; st = 'Más lento ▼'; }
+  else if (status === 'slow') { cls = 'slow'; st = 'Más rápido ▲'; }
+  else if (def.kind === 'rest') st = 'Recupera';
+  else if (run.mode === 'gps' && def.zone) st = el < 8000 ? 'Arrancando…' : '';
+  const r = $('#run'); if (r.className !== cls) r.className = cls;
+  $('#r-status').textContent = st;
+  updateIndicators();
+}
+function updateIndicators() {
+  const g = gpsState();
+  const rg = $('#r-gps'); if (rg) rg.textContent = g.txt;
+  const rw = $('#r-wl'); if (rw) rw.textContent = wakeLock ? '☀ ON' : '⚠ pantalla';
+  const p = $('#gps-pill'); if (p) { p.className = 'pill ' + g.cls; p.textContent = g.txt; }
+}
+
+/* ======================= Pantallas ======================= */
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if ($('#install')) $('#install').style.display = ''; });
+
+const stack = [];
+function nav(fn, ...a) { stack.push([fn, a]); history.pushState({ p: stack.length }, ''); fn(...a); }
+window.addEventListener('popstate', () => {
+  if (run) { history.pushState({ p: 1 }, ''); toast('Usa «Terminar» para salir de la sesión'); return; }
+  stack.pop(); const prev = stack[stack.length - 1];
+  prev ? prev[0](...prev[1]) : renderHome();
+});
+
+function renderHome() {
+  if (!run) stopGPS();
+  stack.length = 0;
+  window.scrollTo(0, 0);
+  const w = LS.get('week', 1);
+  const weekDone = n => ['tue', 'fri', 'sun'].every(d => doneDate(`w${n}-${d}`));
+  const tagCls = { calidad: 'q', suave: 's', test: 'x' };
+  app.innerHTML = `
+  <div class="screen">
+    <div class="bar"><h1>Intervalos 10K<small>Plan de 8 semanas</small></h1>
+      <button class="icon-btn" id="go-hist">Historial</button><button class="icon-btn" id="go-set">Ajustes</button></div>
+    ${!window.isSecureContext && !SIM ? `<div class="note err">Esta página no va por HTTPS: el GPS no funcionará. Súbela a GitHub Pages (o similar).</div>` : ''}
+    <h2>Semana</h2>
+    <div class="weeks">${PLAN.map((_, i) => `<button class="week ${i + 1 === w ? 'sel' : ''}" data-w="${i + 1}">${i + 1}${weekDone(i + 1) ? '<span class="dot">✓</span>' : ''}</button>`).join('')}</div>
+    <h2>Sesiones</h2>
+    ${['tue', 'fri', 'sun'].map(d => {
+      const s = getSession(w, d), dd = doneDate(s.id);
+      const mins = Math.round(s.blocks.reduce((a, b) => a + estSec(b), 0) / 60);
+      return `<button class="card" data-d="${d}">
+        <div class="t"><span>${DAYS[d]}</span><span class="tag ${tagCls[s.type]}">${s.type}</span></div>
+        <div class="d">${s.desc}</div>
+        <div class="m">≈ ${mins} min ${dd ? `· <span class="done">✓ Hecha ${dd}</span>` : ''}</div>
+      </button>`;
+    }).join('')}
+    <button id="install" class="ghost" style="${installEvt ? '' : 'display:none'}">Instalar en la pantalla de inicio</button>
+    <div class="note">Strava sigue grabando aparte. Esta app solo te guía: temporizador, voz y ritmo en vivo.</div>
+  </div>`;
+  app.querySelectorAll('.week').forEach(b => b.onclick = () => { LS.set('week', +b.dataset.w); renderHome(); });
+  app.querySelectorAll('.card').forEach(b => b.onclick = () => nav(renderDetail, getSession(w, b.dataset.d)));
+  $('#go-set').onclick = () => nav(renderSettings);
+  $('#go-hist').onclick = () => nav(renderHistory);
+  $('#install').onclick = async () => { if (!installEvt) return; installEvt.prompt(); await installEvt.userChoice; installEvt = null; $('#install').style.display = 'none'; };
+}
+
+function renderDetail(s) {
+  window.scrollTo(0, 0);
+  let mode = LS.get('mode', 'gps');
+  const draw = () => {
+    app.innerHTML = `
+    <div class="screen">
+      <div class="bar"><button class="icon-btn" id="back">←</button><h1>${s.title}<small>${s.desc}</small></h1></div>
+      <div class="seg2"><button data-m="gps" class="${mode === 'gps' ? 'on' : ''}">GPS (calle)</button><button data-m="cinta" class="${mode === 'cinta' ? 'on' : ''}">Cinta</button></div>
+      ${mode === 'gps' ? `<div><span class="pill" id="gps-pill">Buscando GPS…</span></div>` : `<div class="note">Modo cinta: sin GPS. Los bloques por distancia se convierten a tiempo con el ritmo objetivo; el test se cierra a mano.</div>`}
+      <div class="note warn">No bloquees el móvil: la pantalla se mantendrá encendida. Si se bloquea, el navegador puede pausar el GPS y la voz.</div>
+      <h2>Bloques</h2>
+      <div class="blocks">${s.blocks.map(b => `<div class="blk ${b.kind}"><b>${b.name}</b><span>${shortDur(b.mode, b.value)}</span><small>${targetText(b)}</small></div>`).join('')}</div>
+      <div class="sticky-bottom"><button class="primary big-start" id="start" style="width:100%">EMPEZAR</button></div>
+    </div>`;
+    $('#back').onclick = () => history.back();
+    app.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { mode = b.dataset.m; LS.set('mode', mode); draw(); });
+    $('#start').onclick = () => { unlockAudio(); lockScreen(); startRun(s, mode); };
+    if (mode === 'gps') startGPS(); else stopGPS();
+    updateIndicators();
+  };
+  draw();
+}
+
+function summaryText(h) {
+  const d = new Date(h.date);
+  const z = h.zones, zf = k => `${fmtPace(z[k].min)}-${fmtPace(z[k].max)}`;
+  const L = [];
+  L.push(`Sesión: ${h.title} — ${h.desc}${h.partial ? ' (INCOMPLETA)' : ''}`);
+  L.push(`Fecha: ${d.toLocaleString('es-ES', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })} · Modo: ${h.mode === 'gps' ? 'GPS' : 'cinta (sin GPS, distancias estimadas)'}`);
+  L.push(`Total: ${fmtDur(h.totalMs)}${h.totalDist ? ` · ${fmtDist(h.totalDist)} · ritmo medio ${fmtPace(h.totalMs / h.totalDist)}/km` : ''}`);
+  L.push('');
+  L.push('| # | Bloque | Objetivo | Tiempo | Distancia | Ritmo medio | En zona |');
+  L.push('|---|---|---|---|---|---|---|');
+  h.results.forEach((r, i) => L.push(`| ${i + 1} | ${r.name}${r.note ? ' (' + r.note + ')' : ''} | ${r.target} | ${fmtDur(r.timeMs)} | ${r.dist == null ? '—' : (r.est ? '≈' : '') + fmtDist(r.dist)} | ${r.paceS ? (r.est ? '≈' : '') + fmtPace(r.paceS) : '—'} | ${r.inPct == null ? '—' : r.inPct + '%'} |`));
+  h.results.filter(r => r.splits && r.splits.length).forEach(r => L.push(`\nParciales ${r.name}: ${r.splits.map(fmtPace).join(', ')}`));
+  const work = h.results.filter(r => r.kind === 'work' && r.paceS && !r.est);
+  if (work.length) {
+    const tm = work.reduce((a, r) => a + r.timeMs, 0), ds = work.reduce((a, r) => a + r.dist, 0);
+    const inz = work.filter(r => r.inPct != null);
+    L.push(`\nSeries: ${work.length} · ritmo medio ${fmtPace(tm / ds)}/km${inz.length ? ` · en zona ${Math.round(inz.reduce((a, r) => a + r.inPct, 0) / inz.length)}% de media` : ''}`);
+  }
+  L.push(`Zonas usadas: suave ${zf('suave')} (tope ${fmtPace(h.easyFastLimit)}) · umbral ${zf('umbral')} · series ${zf('series')} · ritmo 10K ${zf('r10k')}`);
+  return L.join('\n');
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); return true; } catch {}
+  const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select();
+  let ok = false; try { ok = document.execCommand('copy'); } catch {} ta.remove(); return ok;
+}
+
+function renderSummary(h, fromRun) {
+  window.scrollTo(0, 0);
+  const rows = h.results.map(r => `
+    <tr class="k-${r.kind}"><td><b>${r.name}</b>${r.target !== '—' ? `<small>${r.target}</small>` : ''}${r.note ? '<small>' + r.note + '</small>' : ''}</td>
+    <td>${fmtDur(r.timeMs)}</td><td>${r.dist == null ? '—' : (r.est ? '≈' : '') + fmtDist(r.dist)}</td>
+    <td>${r.paceS ? (r.est ? '≈' : '') + fmtPace(r.paceS) : '—'}</td><td>${r.inPct == null ? '—' : r.inPct + '%'}</td></tr>
+    ${r.splits && r.splits.length ? `<tr class="splits"><td colspan="5">Parciales: ${r.splits.map(fmtPace).join(' · ')}</td></tr>` : ''}`).join('');
+  app.innerHTML = `
+  <div class="screen">
+    <div class="bar">${fromRun ? '' : '<button class="icon-btn" id="back">←</button>'}<h1>${fromRun ? '¡Hecho!' : 'Resumen'}<small>${h.title} · ${new Date(h.date).toLocaleDateString('es-ES')}${h.partial ? ' · incompleta' : ''}</small></h1></div>
+    <div class="muted">${h.desc}</div>
+    <div class="totals">
+      <div><b>${fmtDur(h.totalMs)}</b><span>Tiempo</span></div>
+      <div><b>${h.totalDist ? fmtDist(h.totalDist) : '—'}</b><span>Distancia</span></div>
+      <div><b>${h.totalDist ? fmtPace(h.totalMs / h.totalDist) : '—'}</b><span>Ritmo</span></div>
+    </div>
+    <table><thead><tr><th>Bloque</th><th>Tiempo</th><th>Dist.</th><th>Ritmo</th><th>Zona</th></tr></thead><tbody>${rows}</tbody></table>
+    ${h.type === 'test' && h.sessionId === 'w4-sun' ? `<div class="note warn">Test 5K hecho: recalcula tus zonas y actualízalas en Ajustes.</div>` : ''}
+    <button class="primary" id="copy">Copiar resumen para Claude</button>
+    ${navigator.share ? '<button id="share">Compartir…</button>' : ''}
+    <button class="ghost" id="home">${fromRun ? 'Volver al inicio' : 'Volver'}</button>
+    ${fromRun ? '' : '<button class="danger" id="del">Borrar esta sesión</button>'}
+  </div>`;
+  const txt = summaryText(h);
+  $('#copy').onclick = async () => toast(await copyText(txt) ? 'Copiado. Pégalo en el chat con Claude.' : 'No se pudo copiar');
+  if ($('#share')) $('#share').onclick = () => navigator.share({ title: h.title, text: txt }).catch(() => {});
+  $('#home').onclick = () => fromRun ? renderHome() : history.back();
+  if ($('#back')) $('#back').onclick = () => history.back();
+  if ($('#del')) $('#del').onclick = e => armed(e.currentTarget, () => { setHist(getHist().filter(x => x.id !== h.id)); toast('Sesión borrada'); history.back(); });
+}
+
+function renderHistory() {
+  window.scrollTo(0, 0);
+  const h = getHist();
+  app.innerHTML = `
+  <div class="screen">
+    <div class="bar"><button class="icon-btn" id="back">←</button><h1>Historial<small>${h.length} sesiones</small></h1></div>
+    ${h.length ? '' : '<div class="note">Aún no hay sesiones. ¡A correr!</div>'}
+    ${h.map((e, i) => `<button class="card" data-i="${i}">
+       <div class="t"><span>${e.title}</span>${e.partial ? '<span class="tag x">incompleta</span>' : `<span class="tag">${e.mode === 'gps' ? 'GPS' : 'cinta'}</span>`}</div>
+       <div class="d">${e.desc}</div>
+       <div class="m">${new Date(e.date).toLocaleString('es-ES', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} · ${fmtDur(e.totalMs)}${e.totalDist ? ' · ' + fmtDist(e.totalDist) : ''}</div>
+     </button>`).join('')}
+  </div>`;
+  $('#back').onclick = () => history.back();
+  app.querySelectorAll('[data-i]').forEach(b => b.onclick = () => nav(renderSummary, h[+b.dataset.i], false));
+}
+
+function renderSettings() {
+  window.scrollTo(0, 0);
+  const zr = k => `<div class="row zone-row"><label>${ZONE_NAMES[k]}<small>min/km · rápido – lento</small></label>
+      <span class="pair"><input type="text" inputmode="decimal" data-z="${k}" data-e="min" value="${fmtPace(S.zones[k].min)}">–<input type="text" inputmode="decimal" data-z="${k}" data-e="max" value="${fmtPace(S.zones[k].max)}"></span></div>`;
+  const tg = (k, l, sm) => `<div class="row"><label>${l}${sm ? `<small>${sm}</small>` : ''}</label><input type="checkbox" class="switch" data-b="${k}" ${S[k] ? 'checked' : ''}></div>`;
+  const num = (k, l, sm, min, max) => `<div class="row"><label>${l}<small>${sm}</small></label><input type="number" data-n="${k}" min="${min}" max="${max}" value="${S[k]}"></div>`;
+  app.innerHTML = `
+  <div class="screen">
+    <div class="bar"><button class="icon-btn" id="back">←</button><h1>Ajustes<small>Se guardan en este móvil</small></h1></div>
+    <h2>Zonas de ritmo</h2>
+    <div class="form">
+      ${['suave', 'umbral', 'series', 'r10k'].map(zr).join('')}
+      <div class="row"><label>Tope rodaje suave<small>Solo avisa si vas más rápido que esto</small></label><input type="text" inputmode="decimal" id="easyFast" value="${fmtPace(S.easyFastLimit)}"></div>
+    </div>
+    <h2>Avisos</h2>
+    <div class="form">
+      ${tg('voice', 'Voz', 'Español (es-ES)')}
+      ${tg('beeps', 'Pitidos', 'Cuenta atrás y cambio de bloque')}
+      ${tg('vibrate', 'Vibración', 'Solo Android')}
+      ${tg('kmSplits', 'Aviso por km', 'En rodajes y tests')}
+      ${num('alertDelay', 'Fuera de ritmo antes de avisar', 'segundos seguidos', 5, 60)}
+      ${num('alertRepeat', 'Repetir aviso cada', 'segundos', 10, 120)}
+      <div class="row"><label>Color de pantalla según<small>Instantáneo responde antes; bloque es más estable</small></label>
+        <select id="basis"><option value="inst" ${S.colorBasis === 'inst' ? 'selected' : ''}>Instantáneo</option><option value="block" ${S.colorBasis === 'block' ? 'selected' : ''}>Ritmo del bloque</option></select></div>
+      <button id="testvoice">Probar voz</button>
+    </div>
+    <h2>Sesión y GPS</h2>
+    <div class="form">
+      ${num('strides', 'Número de rectas', 'tras el calentamiento', 0, 10)}
+      ${num('maxAccuracy', 'Precisión GPS máxima', 'metros (se descartan peores)', 10, 50)}
+    </div>
+    <h2>Datos</h2>
+    <div class="form">
+      <button class="ghost" id="reset">Restaurar ajustes por defecto</button>
+      <button class="danger" id="clearh">Borrar todo el historial</button>
+    </div>
+    <div class="note">Instalar: en Android, menú ⋮ → «Instalar aplicación». En iPhone, Safari → Compartir → «Añadir a pantalla de inicio».</div>
+  </div>`;
+  $('#back').onclick = () => history.back();
+  app.querySelectorAll('[data-z]').forEach(inp => inp.onchange = () => {
+    const v = parsePace(inp.value), z = S.zones[inp.dataset.z], other = inp.dataset.e === 'min' ? z.max : z.min;
+    const ok = v != null && (inp.dataset.e === 'min' ? v <= other : v >= other);
+    inp.classList.toggle('bad', !ok);
+    if (ok) { z[inp.dataset.e] = v; inp.value = fmtPace(v); saveSettings(); toast('Guardado'); }
+  });
+  $('#easyFast').onchange = e => { const v = parsePace(e.target.value); e.target.classList.toggle('bad', v == null); if (v != null) { S.easyFastLimit = v; e.target.value = fmtPace(v); saveSettings(); toast('Guardado'); } };
+  app.querySelectorAll('[data-b]').forEach(inp => inp.onchange = () => { S[inp.dataset.b] = inp.checked; saveSettings(); });
+  app.querySelectorAll('[data-n]').forEach(inp => inp.onchange = () => {
+    const v = Math.round(+inp.value), ok = v >= +inp.min && v <= +inp.max;
+    inp.classList.toggle('bad', !ok); if (ok) { S[inp.dataset.n] = v; saveSettings(); toast('Guardado'); }
+  });
+  $('#basis').onchange = e => { S.colorBasis = e.target.value; saveSettings(); };
+  $('#testvoice').onclick = () => { unlockAudio(); beep(); const z = S.zones.umbral; say(`Serie 2 de 4. Ritmo ${spPace(z.min)} a ${spPace(z.max)}`); };
+  $('#reset').onclick = e => armed(e.currentTarget, () => { S = JSON.parse(JSON.stringify(DEFAULTS)); saveSettings(); renderSettings(); toast('Ajustes restaurados'); });
+  $('#clearh').onclick = e => armed(e.currentTarget, () => { setHist([]); toast('Historial borrado'); });
+}
+
+/* ======================= Arranque ======================= */
+(function boot() {
+  // Recuperar una sesión que se cortó (pestaña cerrada, móvil sin batería…)
+  const p = LS.get('partial', null);
+  if (p && p.results && p.results.length) {
+    const h = getHist(); h.unshift({ ...p, partial: true }); setHist(h);
+    setTimeout(() => toast('Se recuperó una sesión que no terminó (en Historial)', 4000), 300);
+  }
+  LS.del('partial');
+  history.replaceState({ p: 0 }, '');
+  renderHome();
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !SIM) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+  window.addEventListener('beforeunload', e => { if (run) { savePartial(); e.preventDefault(); e.returnValue = ''; } });
+})();
+</script>
+</body>
+</html>
