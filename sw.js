@@ -1,6 +1,6 @@
 // Service worker: guarda la app en caché para que funcione sin conexión.
 // Sube el número de versión cada vez que cambies index.html para forzar la actualización.
-const CACHE = 'intervalos10k-v1';
+const CACHE = 'intervalos10k-v2';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

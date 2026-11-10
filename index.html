@@ -535,7 +535,8 @@ function tick() {
       if (now - B.outSince >= S.alertDelay * 1000 && now - B.lastAlert >= S.alertRepeat * 1000) {
         B.lastAlert = now;
         say(status === 'fast' ? `Más lento, vas a ${spPace(basis)}` : (isFinite(basis) ? `Más rápido, vas a ${spPace(basis)}` : 'Más rápido, estás parado'));
-        vibrate([200, 100, 200, 100, 200]);
+        // 3 cortas = frena · 2 largas = acelera (se distinguen sin mirar el móvil)
+        vibrate(status === 'fast' ? [120, 90, 120, 90, 120] : [450, 180, 450]);
       }
     }
   } else B.outSince = 0;
@@ -545,7 +546,7 @@ function tick() {
     const split = (el - B.kmLastT) / 1000 * (1000 / (1000 + (B.dist - B.kmNext)));
     B.splits.push(split); B.kmLastT = el;
     const k = B.kmNext / 1000; B.kmNext += 1000;
-    if (S.kmSplits && B.dist < def.value) say(`Kilómetro ${k}, ${spPace(split)}`);
+    if (S.kmSplits && B.dist < def.value) { say(`Kilómetro ${k}, ${spPace(split)}`); vibrate(250); }
   }
 
   // Avisos previos y final de bloque
@@ -859,7 +860,7 @@ function renderSettings() {
     <div class="form">
       ${tg('voice', 'Voz', 'Español (es-ES)')}
       ${tg('beeps', 'Pitidos', 'Cuenta atrás y cambio de bloque')}
-      ${tg('vibrate', 'Vibración', 'Solo Android')}
+      ${tg('vibrate', 'Vibración', 'Fuera de ritmo: 3 cortas = frena · 2 largas = acelera')}
       ${tg('kmSplits', 'Aviso por km', 'En rodajes y tests')}
       ${num('alertDelay', 'Fuera de ritmo antes de avisar', 'segundos seguidos', 5, 60)}
       ${num('alertRepeat', 'Repetir aviso cada', 'segundos', 10, 120)}
